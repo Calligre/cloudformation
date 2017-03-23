@@ -1,5 +1,5 @@
 ---
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre DynamoDB CF Stack
 Resources:
   PostsTable:
@@ -17,8 +17,8 @@ Resources:
       - AttributeName: timestamp
         KeyType: RANGE
       ProvisionedThroughput:
-        ReadCapacityUnits: '5'
-        WriteCapacityUnits: '5'
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   FlaggedPostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -30,19 +30,19 @@ Resources:
       - AttributeName: timestamp
         KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: '5'
-        WriteCapacityUnits: '5'
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   PostsTableReadCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: 'true'
+      ActionsEnabled: true
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: '5'
+      EvaluationPeriods: 5
       MetricName: ConsumedReadCapacityUnits
       Namespace: AWS/DynamoDB
-      Period: '60'
+      Period: 60
       Statistic: Sum
-      Threshold: '240.0'
+      Threshold: 240.0
       AlarmActions:
       - Ref: AlertSnsTopic
       Dimensions:
@@ -52,14 +52,14 @@ Resources:
   PostsTableWriteCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: 'true'
+      ActionsEnabled: true
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: '5'
+      EvaluationPeriods: 5
       MetricName: ConsumedWriteCapacityUnits
       Namespace: AWS/DynamoDB
-      Period: '60'
+      Period: 60
       Statistic: Sum
-      Threshold: '240.0'
+      Threshold: 240.0
       AlarmActions:
       - Ref: AlertSnsTopic
       Dimensions:
@@ -69,14 +69,14 @@ Resources:
   FlaggedPostsTableReadCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: 'true'
+      ActionsEnabled: true
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: '5'
+      EvaluationPeriods: 5
       MetricName: ConsumedReadCapacityUnits
       Namespace: AWS/DynamoDB
-      Period: '60'
+      Period: 60
       Statistic: Sum
-      Threshold: '240.0'
+      Threshold: 240.0
       AlarmActions:
       - Ref: AlertSnsTopic
       Dimensions:
@@ -86,14 +86,14 @@ Resources:
   FlaggedPostsTableWriteCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: 'true'
+      ActionsEnabled: true
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: '5'
+      EvaluationPeriods: 5
       MetricName: ConsumedWriteCapacityUnits
       Namespace: AWS/DynamoDB
-      Period: '60'
+      Period: 60
       Statistic: Sum
-      Threshold: '240.0'
+      Threshold: 240.0
       AlarmActions:
       - Ref: AlertSnsTopic
       Dimensions:
@@ -110,7 +110,7 @@ Resources:
       Topics:
       - Ref: AlertSnsTopic
       PolicyDocument:
-        Version: '2008-10-17'
+        Version: 2008-10-17
         Id: __default_policy_ID
         Statement:
         - Sid: __default_statement_ID
