@@ -2,18 +2,40 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre EC2 CF Stack
 Parameters:
-  RdsUser:
-    Default: calligre
-    NoEcho: false
+  RdsAdminUser:
+    Default: calligre-admin
     Description: The RDS admin account user name
     Type: String
-  RdsPassword:
+  RdsAdminPassword:
     NoEcho: true
     Description: The RDS admin account password
     Type: String
+  RdsDbName:
+    Default: calligre
+    Description: Database name to use
+    Type: String
+  RdsUser:
+    Default: calligre
+    Description: An unpriviledged user account for normal operations
+    Type: String
+  RdsPassword:
+    NoEcho: true
+    Description: An unpriviledged user account for normal operations
+    Type: String
+  Auth0ClientId:
+    Description: Auth0 Client ID
+    Type: String
+  Auth0SecretId:
+    Description: Auth0 Secret Id
+    Type: String
+  SentryDsn:
+    Description: Sentry DSN
+    Type: String
+  Domain:
+    Description: Domain that the server should respond to
+    Type: String
   Keypair:
     Default: calligre
-    NoEcho: false
     Description: EC2 Keypair to associate with the Instance
     Type: String
   InstanceType:
@@ -23,13 +45,55 @@ Parameters:
 Resources:
   Instance:
     Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            pip:
+              ansible: []
+          sources:
+            /home/ec2-user/calligre-ansible-role: https://github.com/kyl191/calligre-ansible-role/zipball/master
+          files:
+            /home/ec2-user/calligre.yml:
+              content: |
+                - hosts: localhost
+                  become: true
+                  roles:
+                    - role: calligre-ansible-role
+              mode: "000644"
+              owner: ec2-user
+              group: ec2-user
+              encoding: plain
+            /home/ec2-user/calligre-ansible-role/vars/cf.yml:
+              content: !Sub |
+                db_host: !GetAtt RdsInstance.Address
+                db_port: !GetAtt RdsInstance.Port
+                db_base: ${RdsDbName}
+                db_user: ${RdsUser}
+                db_pass: ${RdsPassword}
+                db_admin_user: ${RdsAdminUser}
+                db_admin_password: ${RdsAdminPassword}
+                auth0_client_id: ${Auth0ClientId}
+                auth0_secret_id: ${Auth0SecretId}
+                sentry_dsn: ${SentryDsn}
+                calligre_domain: ${Domain}
+              mode: "000644"
+              owner: ec2-user
+              group: ec2-user
+              encoding: plain
+          commands:
+            run-ansible:
+              command:  ansible-playbook -i "localhost," -c local calligre.yml
+              cwd: /home/ec2-user
     Properties:
-      DisableApiTermination: true
+      DisableApiTermination: false
       InstanceInitiatedShutdownBehavior: stop
       EbsOptimized: true
       ImageId: ami-ebed508f
       InstanceType:
         Ref: InstanceType
+      IamInstanceProfile:
+        Ref: Ec2InstanceProfile
       KeyName:
         Ref: Keypair
       Monitoring: false
@@ -81,6 +145,7 @@ Resources:
         - Ref: Ec2IamRole
   RdsInstance:
     Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
     Properties:
       AllocatedStorage: 20
       AllowMajorVersionUpgrade: false
@@ -91,9 +156,9 @@ Resources:
       StorageType: gp2
       BackupRetentionPeriod: 21
       MasterUsername:
-        Ref: RdsUser
+        Ref: RdsAdminUser
       MasterUserPassword:
-        Ref: RdsPassword
+        Ref: RdsAdminPassword
       PreferredBackupWindow: 04:00-04:30
       PreferredMaintenanceWindow: sat:05:00-sat:05:30
       DBName: calligre
