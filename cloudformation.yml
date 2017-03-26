@@ -2,10 +2,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre EC2 CF Stack
 Parameters:
-  Ami:
-    Default: ami-c55673a0
-    Description: AMI to use (ami-c55673a0 in us-east-2, ami-f173cc91 in us-west-2)
-    Type: String
   Auth0ClientId: 
     Description: "Auth0 Client ID"
     Type: String
@@ -55,6 +51,20 @@ Parameters:
     Description: String to prepend each stack so the outputs are unique
     Default: Calligre
     Type: String
+Mappings: 
+  RegionMap: # https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs
+    us-east-1: 
+      ami: "ami-0b33d91d"
+    us-east-2:
+      ami: "ami-c55673a0"
+    us-west-1: 
+      ami: "ami-165a0876"
+    us-west-2:
+      ami: "ami-f173cc91"
+    eu-west-1: # Ireland
+      ami: "ami-70edb016"
+    eu-west-2: # London
+      ami: "ami-f1949e95"
 Resources:
   Instance:
     Type: AWS::EC2::Instance
@@ -126,7 +136,7 @@ Resources:
     Properties:
       DisableApiTermination: false
       IamInstanceProfile: !Ref Ec2InstanceProfile
-      ImageId: !Ref Ami
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", ami]
       InstanceInitiatedShutdownBehavior: stop
       InstanceType: !Ref InstanceType
       KeyName: !Ref Keypair
