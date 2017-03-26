@@ -2,45 +2,54 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre EC2 CF Stack
 Parameters:
-  RdsAdminUser:
+  Ami:
+    Default: ami-c55673a0
+    Description: AMI to use (ami-c55673a0 in us-east-2, ami-f173cc91 in us-west-2)
+    Type: String
+  Auth0ClientId: 
+    Description: "Auth0 Client ID"
+    Type: String
+  Auth0SecretId: 
+    Description: "Auth0 Secret Id"
+    Type: String
+  Domain: 
+    Description: "Domain that the server should respond to"
+    Type: String
+  InstanceType: 
+    Default: t2.large
+    Description: "Instance type to host the conference on"
+    Type: String
+  Keypair: 
+    Default: calligre
+    Description: "EC2 Keypair to associate with the Instance"
+    Type: String
+  Route53HostedZoneId:
+    Default: Z1D0AWFN0I54UQ
+    Description: The Route 53 Domain you want to host the website on
+    Type: String
+  RdsAdminPassword: 
+    Description: "The RDS admin account password"
+    NoEcho: true
+    Type: String
+  RdsAdminUser: 
     Default: calligreadmin
-    Description: The RDS admin account user name
+    Description: "The RDS admin account user name"
     Type: String
-  RdsAdminPassword:
+  RdsDbName: 
+    Default: calligre
+    Description: "Database name to use"
+    Type: String
+  RdsPassword: 
+    Default: postgres
+    Description: "An unpriviledged user account for normal operations (Default is postgres)"
     NoEcho: true
-    Description: The RDS admin account password
     Type: String
-  RdsDbName:
+  RdsUser: 
     Default: calligre
-    Description: Database name to use
+    Description: "An unpriviledged user account for normal operations"
     Type: String
-  RdsUser:
-    Default: calligre
-    Description: An unpriviledged user account for normal operations
-    Type: String
-  RdsPassword:
-    NoEcho: true
-    Description: An unpriviledged user account for normal operations
-    Type: String
-  Auth0ClientId:
-    Description: Auth0 Client ID
-    Type: String
-  Auth0SecretId:
-    Description: Auth0 Secret Id
-    Type: String
-  SentryDsn:
-    Description: Sentry DSN
-    Type: String
-  Domain:
-    Description: Domain that the server should respond to
-    Type: String
-  Keypair:
-    Default: calligre
-    Description: EC2 Keypair to associate with the Instance
-    Type: String
-  InstanceType:
-    Default: r4.large
-    Description: Instance type to host the conference on
+  SentryDsn: 
+    Description: "Sentry DSN (optional, captures errors if you want)"
     Type: String
 Resources:
   Instance:
@@ -49,7 +58,7 @@ Resources:
       AWS::CloudFormation::Init:
         config:
           sources:
-            /home/ec2-user/calligre-ansible-role: https://github.com/kyl191/calligre-ansible-role/zipball/master
+            /home/ec2-user/calligre-ansible-role: https://github.com/calligre/calligre-ansible-role/zipball/master
           files:
             /home/ec2-user/calligre.yml:
               content: |
@@ -100,15 +109,11 @@ Resources:
               cwd: /home/ec2-user
     Properties:
       DisableApiTermination: false
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      ImageId: !Ref Ami
       InstanceInitiatedShutdownBehavior: stop
-      EbsOptimized: true
-      ImageId: ami-ebed508f
-      InstanceType:
-        Ref: InstanceType
-      IamInstanceProfile:
-        Ref: Ec2InstanceProfile
-      KeyName:
-        Ref: Keypair
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref Keypair
       Monitoring: false
       NetworkInterfaces:
       - DeleteOnTermination: true
@@ -155,6 +160,24 @@ Resources:
     Properties:
       Roles:
         - Ref: Ec2IamRole
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  ElasticIpAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt ElasticIp.AllocationId
+      InstanceId: !Ref Instance
+  R53Domain:
+    Type: "AWS::Route53::RecordSet"
+    Properties:
+      HostedZoneId: !Ref Route53HostedZoneId
+      Name: !Ref Domain
+      ResourceRecords:
+        - !Ref ElasticIp
+      TTL: 300
+      Type: A
   RdsInstance:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Snapshot
@@ -166,11 +189,9 @@ Resources:
       Port: 5432
       PubliclyAccessible: false
       StorageType: gp2
-      BackupRetentionPeriod: 21
-      MasterUsername:
-        Ref: RdsAdminUser
-      MasterUserPassword:
-        Ref: RdsAdminPassword
+      BackupRetentionPeriod: 28
+      MasterUsername: !Ref RdsAdminUser
+      MasterUserPassword: !Ref RdsAdminPassword
       PreferredBackupWindow: 04:00-04:30
       PreferredMaintenanceWindow: sat:05:00-sat:05:30
       DBName: calligre
