@@ -42,14 +42,20 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.42.42.0/25
-      AvailabilityZone: us-east-2a
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - !GetAZs
       VpcId:
         Ref: CalligreVpc
   AzBSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 10.42.42.128/25
-      AvailabilityZone: us-east-2b
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - !GetAZs
       VpcId:
         Ref: CalligreVpc
   DbSubnetGroup:
