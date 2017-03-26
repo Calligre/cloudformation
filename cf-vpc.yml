@@ -1,0 +1,182 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Calligre VPC CF Stack
+Outputs:
+  AzASubnet:
+    Value:
+      Ref: AzASubnet
+    Export:
+      Name: AzASubnet
+  CalligreSecurityGroup:
+    Value:
+      Ref: CalligreSecurityGroup
+    Export:
+      Name: CalligreSecurityGroup
+  DbSubnetGroup:
+    Value:
+      Ref: DbSubnetGroup
+    Export:
+      Name: DbSubnetGroup
+  CalligreDbSecurityGroup:
+    Value:
+      Ref: CalligreDbSecurityGroup
+    Export:
+      Name: CalligreDbSecurityGroup
+Resources:
+  CalligreVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.42.42.0/24
+      InstanceTenancy: default
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: calligre
+  AzASubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.42.42.0/25
+      AvailabilityZone: us-east-2a
+      VpcId:
+        Ref: CalligreVpc
+  AzBSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.42.42.128/25
+      AvailabilityZone: us-east-2b
+      VpcId:
+        Ref: CalligreVpc
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Security Group for RDS Instances
+      SubnetIds:
+      - Ref: AzASubnet
+      - Ref: AzBSubnet
+  CalligreSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Primary Security Group for Instances
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId:
+        Ref: CalligreVpc
+  CalligreDbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for RDS DB Instance
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId:
+            Ref: CalligreSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          DestinationSecurityGroupId:
+            Ref: CalligreSecurityGroup
+      VpcId:
+        Ref: CalligreVpc
+  NetworkAcl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId:
+        Ref: CalligreVpc
+  AllowVpcOutgoingAclRuleRule:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+      NetworkAclId:
+        Ref: NetworkAcl
+  AllowVpcIncomingAcl:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+      NetworkAclId:
+        Ref: NetworkAcl
+  AzASubnetAcl:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAcl
+      SubnetId:
+        Ref: AzASubnet
+  AzBSubnetAcl:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: NetworkAcl
+      SubnetId:
+        Ref: AzBSubnet
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: CalligreVpc
+  AzASubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: AzASubnet
+      RouteTableId:
+        Ref: RouteTable
+  AzBSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: AzBSubnet
+      RouteTableId:
+        Ref: RouteTable
+  VpcGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: CalligreVpc
+      InternetGatewayId:
+        Ref: InternetGateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  InternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId:
+        Ref: RouteTable
+      GatewayId:
+        Ref: InternetGateway
+    DependsOn: VpcGateway
+  DhcpOptions:
+    Type: AWS::EC2::DHCPOptions
+    Properties:
+      DomainNameServers:
+      - AmazonProvidedDNS
+  DhcpOptAssociation:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      VpcId:
+        Ref: CalligreVpc
+      DhcpOptionsId:
+        Ref: DhcpOptions
