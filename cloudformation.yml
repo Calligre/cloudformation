@@ -125,6 +125,11 @@ Resources:
       Tags:
       - Key: Name
         Value: calligre
+      UserData:
+        "Fn::Base64":
+          !Sub |
+            #!/bin/bash -xe
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource Instance --region ${AWS::Region}
   Ec2IamRole:
     Type: "AWS::IAM::Role"
     Properties:
