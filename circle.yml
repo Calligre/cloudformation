@@ -14,9 +14,9 @@ deployment:
   production:
     branch: master
     commands:
-      - aws s3 sync . s3://calligre-us-east-1/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      - aws s3 sync . s3://calligre-us-east-2/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      - aws s3 sync . s3://calligre-us-west-1/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      - aws s3 sync . s3://calligre-us-west-2/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      - aws s3 sync . s3://calligre-eu-west-1/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      - aws s3 sync . s3://calligre-eu-west-2/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
+      - aws s3 sync . s3://calligre-us-east-1/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region us-east-1
+      - aws s3 sync . s3://calligre-us-east-2/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region us-east-2
+      - aws s3 sync . s3://calligre-us-west-1/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region us-west-1
+      - aws s3 sync . s3://calligre-us-west-2/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region us-west-2
+      - aws s3 sync . s3://calligre-eu-west-1/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region eu-west-1
+      - aws s3 sync . s3://calligre-eu-west-2/cloudformation/ --exclude "*" --include "cf-*.yml" --delete --region eu-west-2
