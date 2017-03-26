@@ -14,12 +14,16 @@ Parameters:
   Auth0ExtClientSecret:
     Description: Auth0 client secret to use for crendential retrival
     Type: String
+  OutputPrefix:
+    Description: String to prepend each stack so the outputs are unique
+    Default: Calligre
+    Type: String
 Outputs:
   ExternalPostSnsTopic:
     Value:
       Ref: ExternalPostSnsTopic
     Export:
-      Name: ExternalPostSnsTopic
+      Name: !Join ["-", [!Ref OutputPrefix, ExternalPostSnsTopic]]
 Resources:
   ExtPostsLambda:
     Type: "AWS::Lambda::Function"

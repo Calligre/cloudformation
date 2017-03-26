@@ -1,27 +1,32 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre VPC CF Stack
+Parameters:
+  OutputPrefix:
+    Description: String to prepend each stack so the outputs are unique
+    Default: Calligre
+    Type: String
 Outputs:
   AzASubnet:
     Value:
       Ref: AzASubnet
     Export:
-      Name: AzASubnet
+      Name: !Join ["-", [!Ref OutputPrefix, AzASubnet]]
   CalligreSecurityGroup:
     Value:
       Ref: CalligreSecurityGroup
     Export:
-      Name: CalligreSecurityGroup
+      Name: !Join ["-", [!Ref OutputPrefix, CalligreSecurityGroup]]
   DbSubnetGroup:
     Value:
       Ref: DbSubnetGroup
     Export:
-      Name: DbSubnetGroup
+      Name: !Join ["-", [!Ref OutputPrefix, DbSubnetGroup]]
   CalligreDbSecurityGroup:
     Value:
       Ref: CalligreDbSecurityGroup
     Export:
-      Name: CalligreDbSecurityGroup
+      Name: !Join ["-", [!Ref OutputPrefix, CalligreDbSecurityGroup]]
 Resources:
   CalligreVpc:
     Type: AWS::EC2::VPC

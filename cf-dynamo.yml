@@ -1,17 +1,22 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre DynamoDB CF Stack
+Parameters:
+  OutputPrefix:
+    Description: String to prepend each stack so the outputs are unique
+    Default: Calligre
+    Type: String
 Outputs:
   PostsTable:
     Value:
       Ref: PostsTable
     Export:
-      Name: PostsTable
+      Name: !Join ["-", [!Ref OutputPrefix, PostsTable]]
   FlaggedPostsTable:
     Value:
       Ref: FlaggedPostsTable
     Export:
-      Name: FlaggedPostsTable
+      Name: !Join ["-", [!Ref OutputPrefix, FlaggedPostsTable]]
 Resources:
   PostsTable:
     Type: AWS::DynamoDB::Table

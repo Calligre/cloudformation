@@ -51,6 +51,10 @@ Parameters:
   SentryDsn: 
     Description: "Sentry DSN (optional, captures errors if you want)"
     Type: String
+  OutputPrefix:
+    Description: String to prepend each stack so the outputs are unique
+    Default: Calligre
+    Type: String
 Resources:
   Instance:
     Type: AWS::EC2::Instance
@@ -91,12 +95,24 @@ Resources:
                   resize_bucket: ${ImagePendingResizeBucket}
                   sentry_dsn: ${SentryDsn}
                   upload_bucket: ${ImageBucket}
-                - ExternalPostSnsTopic: !ImportValue ExternalPostSnsTopic
-                  FlaggedPostsTable: !ImportValue FlaggedPostsTable
-                  ImageBucket: !ImportValue ImageBucket
-                  ImagePendingResizeBucket: !ImportValue ImagePendingResizeBucket
-                  ProfilePicsBucket: !ImportValue ProfilePicsBucket
-                  PostsTable: !ImportValue PostsTable 
+                - ExternalPostSnsTopic: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, ExternalPostSnsTopic]]
+                  FlaggedPostsTable: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, FlaggedPostsTable]]
+                  ImageBucket: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, ImageBucket]]
+                  ImagePendingResizeBucket: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, ImagePendingResizeBucket]]
+                  ProfilePicsBucket: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, ProfilePicsBucket]]
+                  PostsTable: 
+                    Fn::ImportValue:
+                     !Join ["-", [!Ref OutputPrefix, PostsTable ]]
               encoding: plain 
               group: ec2-user
               mode: "000644"
@@ -119,9 +135,13 @@ Resources:
       - DeleteOnTermination: true
         Description: Primary network interface
         DeviceIndex: 0
-        SubnetId: !ImportValue "AzASubnet"
+        SubnetId: 
+          Fn::ImportValue:
+           !Join ["-", [!Ref OutputPrefix, "AzASubnet"]]
         GroupSet: 
-        - !ImportValue "CalligreSecurityGroup"
+        - 
+          Fn::ImportValue:
+           !Join ["-", [!Ref OutputPrefix, "CalligreSecurityGroup"]]
       Tags:
       - Key: Name
         Value: calligre
@@ -203,9 +223,12 @@ Resources:
       Engine: postgres
       EngineVersion: 9.5.4
       LicenseModel: postgresql-license
-      DBSubnetGroupName: !ImportValue "DbSubnetGroup"
+      DBSubnetGroupName: 
+        Fn::ImportValue:
+         !Join ["-", [!Ref OutputPrefix, "DbSubnetGroup"]]
       VPCSecurityGroups:
-      - !ImportValue CalligreDbSecurityGroup
+      - Fn::ImportValue:
+         !Join ["-", [!Ref OutputPrefix, CalligreDbSecurityGroup]]
       Tags:
       - Key: Name
         Value: calligre

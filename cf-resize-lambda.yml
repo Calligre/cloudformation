@@ -4,22 +4,27 @@ Description: Calligre S3 + Lambda Resizer CF Stack
 # The IAM policies in this are overly permissive, but avoids a circular dependency
 # Specifically, the policies need to be created before the buckets are created
 # But the policies would use the CF-generated names - and fail in the _oddest_ ways
+Parameters:
+  OutputPrefix:
+    Description: String to prepend each stack so the outputs are unique
+    Default: Calligre
+    Type: String
 Outputs:
   ImageBucket:
     Value:
       Ref: ImageBucket
     Export:
-      Name: ImageBucket
+      Name: !Join ["-", [!Ref OutputPrefix, ImageBucket]]
   ImagePendingResizeBucket:
     Value:
       Ref: ImagePendingResizeBucket
     Export:
-      Name: ImagePendingResizeBucket
+      Name: !Join ["-", [!Ref OutputPrefix, ImagePendingResizeBucket]]
   ProfilePicsBucket:
     Value:
       Ref: ProfilePicsBucket
     Export:
-      Name: ProfilePicsBucket
+      Name: !Join ["-", [!Ref OutputPrefix, ProfilePicsBucket]]
 Resources:
   ImageBucket:
     Type: AWS::S3::Bucket
