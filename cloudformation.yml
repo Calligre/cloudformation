@@ -58,7 +58,7 @@ Resources:
       AWS::CloudFormation::Init:
         config:
           sources:
-            /home/ec2-user/calligre-ansible-role: https://github.com/calligre/calligre-ansible-role/zipball/master
+            /home/ec2-user/calligre-ansible-role: https://github.com/calligre/calligre-ansible-role/tarball/master
           files:
             /home/ec2-user/calligre.yml:
               content: |
