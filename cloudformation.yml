@@ -12,7 +12,7 @@ Parameters:
     Description: "Domain that the server should respond to"
     Type: String
   InstanceType: 
-    Default: t2.large
+    Default: t2.micro
     Description: "Instance type to host the conference on"
     Type: String
   Keypair: 
@@ -154,7 +154,7 @@ Resources:
            !Join ["-", [!Ref OutputPrefix, "CalligreSecurityGroup"]]
       Tags:
       - Key: Name
-        Value: calligre
+        Value: !Join ["-", [!Ref OutputPrefix, "calligre-instance"]]
       UserData:
         "Fn::Base64":
           !Sub |
@@ -215,7 +215,7 @@ Resources:
       Type: A
   RdsInstance:
     Type: AWS::RDS::DBInstance
-    DeletionPolicy: Snapshot
+    DeletionPolicy: Delete
     Properties:
       AllocatedStorage: 20
       AllowMajorVersionUpgrade: false
@@ -241,4 +241,4 @@ Resources:
          !Join ["-", [!Ref OutputPrefix, CalligreDbSecurityGroup]]
       Tags:
       - Key: Name
-        Value: calligre
+        Value: !Join ["-", [!Ref OutputPrefix, calligre-rds-instance]]
