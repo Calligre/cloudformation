@@ -43,6 +43,8 @@ Resources:
             MaxAge: 3000
   ImagePendingResizeBucket:
     Type: AWS::S3::Bucket
+    DependsOn:
+      - LambdaS3InvokePermission
     Properties:
       AccessControl: Private
       NotificationConfiguration:
