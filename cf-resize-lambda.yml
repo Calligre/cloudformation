@@ -1,9 +1,11 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre S3 + Lambda Resizer CF Stack
-# The IAM policies in this are overly permissive, but avoids a circular dependency
+# The IAM policies in this are overly permissive, but avoids a circular
+# dependency
 # Specifically, the policies need to be created before the buckets are created
-# But the policies would use the CF-generated names - and fail in the _oddest_ ways
+# But the policies would use the CF-generated names, and fail in the _oddest_
+# ways
 Parameters:
   OutputPrefix:
     Description: String to prepend each stack so the outputs are unique
@@ -32,13 +34,13 @@ Resources:
       AccessControl: PublicRead
       CorsConfiguration:
         CorsRules:
-        - AllowedHeaders:
-          - "*"
-          AllowedMethods:
-          - GET
-          AllowedOrigins:
-          - "*"
-          MaxAge: 3000
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
   ImagePendingResizeBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -49,19 +51,19 @@ Resources:
             Event: "s3:ObjectCreated:*"
       CorsConfiguration:
         CorsRules:
-        - AllowedHeaders:
-          - "*"
-          AllowedMethods:
-          - GET
-          AllowedOrigins:
-          - "*"
-          MaxAge: 3000
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
       LifecycleConfiguration:
         Rules:
-        - ExpirationInDays: 1
-          Id: Delete after 1 day
-          Prefix: ''
-          Status: Enabled
+          - ExpirationInDays: 1
+            Id: Delete after 1 day
+            Prefix: ''
+            Status: Enabled
       VersioningConfiguration:
         Status: Suspended
   ProfilePicsBucket:
@@ -70,13 +72,13 @@ Resources:
       AccessControl: PublicRead
       CorsConfiguration:
         CorsRules:
-        - AllowedHeaders:
-          - "*"
-          AllowedMethods:
-          - GET
-          AllowedOrigins:
-          - "*"
-          MaxAge: 3000
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3000
       VersioningConfiguration:
         Status: Suspended
   ResizeLambda:
@@ -90,7 +92,7 @@ Resources:
       Description: Lambda to resize images posted to Calligre
       Environment:
         Variables:
-          DEST_BUCKET: 
+          DEST_BUCKET:
             Ref: ImageBucket
       Handler: ResizeImage.handler
       MemorySize: 512
@@ -117,27 +119,27 @@ Resources:
         Version: "2012-10-17"
         Statement:
           - Effect: "Allow"
-            Action: 
-            - "s3:GetObject"
-            - "s3:GetObjectAcl"
-            - "s3:PutObject"
-            - "s3:PutObjectAcl"
-            - "s3:DeleteObject"
+            Action:
+              - "s3:GetObject"
+              - "s3:GetObjectAcl"
+              - "s3:PutObject"
+              - "s3:PutObjectAcl"
+              - "s3:DeleteObject"
             Resource: "arn:aws:s3:::*"
           - Effect: "Allow"
-            Action: 
-            - "logs:CreateLogGroup"
-            - "logs:CreateLogStream"
-            - "logs:PutLogEvents"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
             Resource: "*"
       Roles:
         - Ref: LambdaS3IamRole
-  LambdaS3InvokePermission: 
+  LambdaS3InvokePermission:
     Type: "AWS::Lambda::Permission"
-    Properties: 
+    Properties:
       FunctionName: !GetAtt ResizeLambda.Arn
       Action: "lambda:InvokeFunction"
       Principal: "s3.amazonaws.com"
-      SourceAccount: 
+      SourceAccount:
         Ref: "AWS::AccountId"
       SourceArn: "arn:aws:s3:::*"

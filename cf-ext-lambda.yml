@@ -5,7 +5,7 @@ Parameters:
   TwitterClientId:
     Description: Twitter client ID to use for cross posting
     Type: String
-  TwitterClientSecret: 
+  TwitterClientSecret:
     Description: Twitter client secret to use for cross posting
     Type: String
   Auth0ExtClientId:
@@ -36,13 +36,13 @@ Resources:
       Description: Lambda to cross post social media posts from Calligre
       Environment:
         Variables:
-          TWITTER_CLIENT_ID: 
+          TWITTER_CLIENT_ID:
             Ref: TwitterClientId
-          TWITTER_CLIENT_SECRET: 
+          TWITTER_CLIENT_SECRET:
             Ref: TwitterClientSecret
-          AUTH0_CLIENT_ID: 
+          AUTH0_CLIENT_ID:
             Ref: Auth0ExtClientId
-          AUTH0_CLIENT_SECRET: 
+          AUTH0_CLIENT_SECRET:
             Ref: Auth0ExtClientSecret
       Handler: PostToExternalServices.handler
       MemorySize: 128
@@ -70,21 +70,21 @@ Resources:
         Statement:
           # Get from any S3 bucket
           - Effect: "Allow"
-            Action: 
-            - "s3:GetObject"
-            - "s3:GetObjectAcl"
+            Action:
+              - "s3:GetObject"
+              - "s3:GetObjectAcl"
             Resource: "arn:aws:s3:::*"
           - Effect: "Allow"
-            Action: 
-            - "logs:CreateLogGroup"
-            - "logs:CreateLogStream"
-            - "logs:PutLogEvents"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
             Resource: "*"
       Roles:
         - Ref: LambdaS3GetIamRole
-  LambdaS3GetInvokePermission: 
+  LambdaS3GetInvokePermission:
     Type: "AWS::Lambda::Permission"
-    Properties: 
+    Properties:
       FunctionName: !GetAtt ExtPostsLambda.Arn
       Action: "lambda:InvokeFunction"
       Principal: "sns.amazonaws.com"
@@ -94,32 +94,32 @@ Resources:
     Properties:
       DisplayName: calligre-external-posts
       Subscription:
-      - Endpoint: !GetAtt ExtPostsLambda.Arn
-        Protocol: lambda
+        - Endpoint: !GetAtt ExtPostsLambda.Arn
+          Protocol: lambda
   ExternalPostSnsTopicPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
       Topics:
-      - Ref: ExternalPostSnsTopic
+        - Ref: ExternalPostSnsTopic
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            AWS: "*"
-          Action:
-          - SNS:GetTopicAttributes
-          - SNS:SetTopicAttributes
-          - SNS:AddPermission
-          - SNS:RemovePermission
-          - SNS:DeleteTopic
-          - SNS:Subscribe
-          - SNS:ListSubscriptionsByTopic
-          - SNS:Publish
-          - SNS:Receive
-          Resource:
-            Ref: ExternalPostSnsTopic
-          Condition:
-            StringEquals:
-              AWS:SourceOwner: 
-                Ref: "AWS::AccountId"
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - SNS:GetTopicAttributes
+              - SNS:SetTopicAttributes
+              - SNS:AddPermission
+              - SNS:RemovePermission
+              - SNS:DeleteTopic
+              - SNS:Subscribe
+              - SNS:ListSubscriptionsByTopic
+              - SNS:Publish
+              - SNS:Receive
+            Resource:
+              Ref: ExternalPostSnsTopic
+            Condition:
+              StringEquals:
+                AWS:SourceOwner:
+                  Ref: "AWS::AccountId"

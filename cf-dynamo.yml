@@ -22,15 +22,15 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: posts
-        AttributeType: S
-      - AttributeName: timestamp
-        AttributeType: N
+        - AttributeName: posts
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
       KeySchema:
-      - AttributeName: posts
-        KeyType: HASH
-      - AttributeName: timestamp
-        KeyType: RANGE
+        - AttributeName: posts
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -38,11 +38,11 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-      - AttributeName: timestamp
-        AttributeType: N
+        - AttributeName: timestamp
+          AttributeType: N
       KeySchema:
-      - AttributeName: timestamp
-        KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
@@ -58,11 +58,11 @@ Resources:
       Statistic: Sum
       Threshold: 240.0
       AlarmActions:
-      - Ref: AlertSnsTopic
+        - Ref: AlertSnsTopic
       Dimensions:
-      - Name: TableName
-        Value:
-          Ref: PostsTable
+        - Name: TableName
+          Value:
+            Ref: PostsTable
   PostsTableWriteCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -75,11 +75,11 @@ Resources:
       Statistic: Sum
       Threshold: 240.0
       AlarmActions:
-      - Ref: AlertSnsTopic
+        - Ref: AlertSnsTopic
       Dimensions:
-      - Name: TableName
-        Value:
-          Ref: PostsTable
+        - Name: TableName
+          Value:
+            Ref: PostsTable
   FlaggedPostsTableReadCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -92,11 +92,11 @@ Resources:
       Statistic: Sum
       Threshold: 240.0
       AlarmActions:
-      - Ref: AlertSnsTopic
+        - Ref: AlertSnsTopic
       Dimensions:
-      - Name: TableName
-        Value:
-          Ref: FlaggedPostsTable
+        - Name: TableName
+          Value:
+            Ref: FlaggedPostsTable
   FlaggedPostsTableWriteCapacityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -109,11 +109,11 @@ Resources:
       Statistic: Sum
       Threshold: 240.0
       AlarmActions:
-      - Ref: AlertSnsTopic
+        - Ref: AlertSnsTopic
       Dimensions:
-      - Name: TableName
-        Value:
-          Ref: FlaggedPostsTable
+        - Name: TableName
+          Value:
+            Ref: FlaggedPostsTable
   AlertSnsTopic:
     Type: AWS::SNS::Topic
     Properties:
@@ -122,28 +122,28 @@ Resources:
     Type: AWS::SNS::TopicPolicy
     Properties:
       Topics:
-      - Ref: AlertSnsTopic
+        - Ref: AlertSnsTopic
       PolicyDocument:
         Version: 2008-10-17
         Id: __default_policy_ID
         Statement:
-        - Sid: __default_statement_ID
-          Effect: Allow
-          Principal:
-            AWS: "*"
-          Action:
-          - SNS:GetTopicAttributes
-          - SNS:SetTopicAttributes
-          - SNS:AddPermission
-          - SNS:RemovePermission
-          - SNS:DeleteTopic
-          - SNS:Subscribe
-          - SNS:ListSubscriptionsByTopic
-          - SNS:Publish
-          - SNS:Receive
-          Resource:
-            Ref: AlertSnsTopic
-          Condition:
-            StringEquals:
-              AWS:SourceOwner:
-                Ref: AWS::AccountId
+          - Sid: __default_statement_ID
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - SNS:GetTopicAttributes
+              - SNS:SetTopicAttributes
+              - SNS:AddPermission
+              - SNS:RemovePermission
+              - SNS:DeleteTopic
+              - SNS:Subscribe
+              - SNS:ListSubscriptionsByTopic
+              - SNS:Publish
+              - SNS:Receive
+            Resource:
+              Ref: AlertSnsTopic
+            Condition:
+              StringEquals:
+                AWS:SourceOwner:
+                  Ref: AWS::AccountId

@@ -1,10 +1,14 @@
+---
 machine:
-  ruby:
-    version: ruby-2.4.0
+  python:
+    version: 3.5.2
 
+dependencies:
+  pre:
+    - pip install yamllint
 test:
   override:
-    - yamllint *.yml
+    - yamllint cf-*.yml
 
 deployment:
   production:
@@ -16,4 +20,3 @@ deployment:
       - aws s3 sync . s3://calligre-us-west-2/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
       - aws s3 sync . s3://calligre-eu-west-1/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
       - aws s3 sync . s3://calligre-eu-west-2/cloudformation/ --exclude "*" --include "*.yml" --exclude "circle.yml" --delete
-      

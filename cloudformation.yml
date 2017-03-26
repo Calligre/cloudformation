@@ -2,20 +2,20 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre EC2 CF Stack
 Parameters:
-  Auth0ClientId: 
+  Auth0ClientId:
     Description: "Auth0 Client ID"
     Type: String
-  Auth0SecretId: 
+  Auth0SecretId:
     Description: "Auth0 Secret Id"
     Type: String
-  Domain: 
+  Domain:
     Description: "Domain that the server should respond to"
     Type: String
-  InstanceType: 
+  InstanceType:
     Default: t2.micro
     Description: "Instance type to host the conference on"
     Type: String
-  Keypair: 
+  Keypair:
     Default: calligre
     Description: "EC2 Keypair to associate with the Instance"
     Type: String
@@ -23,47 +23,48 @@ Parameters:
     Default: Z1D0AWFN0I54UQ
     Description: The Route 53 Domain you want to host the website on
     Type: String
-  RdsAdminPassword: 
+  RdsAdminPassword:
     Description: "The RDS admin account password"
     NoEcho: true
     Type: String
-  RdsAdminUser: 
+  RdsAdminUser:
     Default: calligreadmin
     Description: "The RDS admin account user name"
     Type: String
-  RdsDbName: 
+  RdsDbName:
     Default: calligre
     Description: "Database name to use"
     Type: String
-  RdsPassword: 
+  RdsPassword:
     Default: postgres
-    Description: "An unpriviledged user account for normal operations (Default is postgres)"
+    Description:
+      An unpriviledged user account for normal operations (Default is postgres)
     NoEcho: true
     Type: String
-  RdsUser: 
+  RdsUser:
     Default: calligre
     Description: "An unpriviledged user account for normal operations"
     Type: String
-  SentryDsn: 
+  SentryDsn:
     Description: "Sentry DSN (optional, captures errors if you want)"
     Type: String
   OutputPrefix:
     Description: String to prepend each stack so the outputs are unique
     Default: Calligre
     Type: String
-Mappings: 
-  RegionMap: # https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs
-    us-east-1: 
+Mappings:
+  RegionMap:  # https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs
+    us-east-1:
       ami: "ami-0b33d91d"
     us-east-2:
       ami: "ami-c55673a0"
-    us-west-1: 
+    us-west-1:
       ami: "ami-165a0876"
     us-west-2:
       ami: "ami-f173cc91"
-    eu-west-1: # Ireland
+    eu-west-1:  # Ireland
       ami: "ami-70edb016"
-    eu-west-2: # London
+    eu-west-2:  # London
       ami: "ami-f1949e95"
 Resources:
   Instance:
@@ -72,7 +73,8 @@ Resources:
       AWS::CloudFormation::Init:
         config:
           sources:
-            /home/ec2-user/calligre-ansible-role: https://github.com/calligre/calligre-ansible-role/tarball/master
+            /home/ec2-user/calligre-ansible-role:
+              https://github.com/calligre/calligre-ansible-role/tarball/master
           files:
             /home/ec2-user/calligre.yml:
               content: |
@@ -85,7 +87,7 @@ Resources:
               mode: "000644"
               owner: ec2-user
             /home/ec2-user/calligre-ansible-role/vars/main.yml:
-              content: !Sub 
+              content: !Sub
                 - |
                   auth0_client_id: ${Auth0ClientId}
                   auth0_secret_id: ${Auth0SecretId}
@@ -105,25 +107,25 @@ Resources:
                   resize_bucket: ${ImagePendingResizeBucket}
                   sentry_dsn: ${SentryDsn}
                   upload_bucket: ${ImageBucket}
-                - ExternalPostSnsTopic: 
+                - ExternalPostSnsTopic:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, ExternalPostSnsTopic]]
-                  FlaggedPostsTable: 
+                      !Join ["-", [!Ref OutputPrefix, ExternalPostSnsTopic]]
+                  FlaggedPostsTable:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, FlaggedPostsTable]]
-                  ImageBucket: 
+                      !Join ["-", [!Ref OutputPrefix, FlaggedPostsTable]]
+                  ImageBucket:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, ImageBucket]]
-                  ImagePendingResizeBucket: 
+                      !Join ["-", [!Ref OutputPrefix, ImageBucket]]
+                  ImagePendingResizeBucket:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, ImagePendingResizeBucket]]
-                  ProfilePicsBucket: 
+                      !Join ["-", [!Ref OutputPrefix, ImagePendingResizeBucket]]
+                  ProfilePicsBucket:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, ProfilePicsBucket]]
-                  PostsTable: 
+                      !Join ["-", [!Ref OutputPrefix, ProfilePicsBucket]]
+                  PostsTable:
                     Fn::ImportValue:
-                     !Join ["-", [!Ref OutputPrefix, PostsTable ]]
-              encoding: plain 
+                      !Join ["-", [!Ref OutputPrefix, PostsTable]]
+              encoding: plain
               group: ec2-user
               mode: "000644"
               owner: ec2-user
@@ -131,7 +133,10 @@ Resources:
             1-install-ansible:
               command: pip -q install ansible
             2-run-ansible:
-              command:  /usr/local/bin/ansible-playbook -i "localhost," -c local calligre.yml
+              command: >
+                /usr/local/bin/ansible-playbook
+                -i "localhost,"
+                -c local calligre.yml
               cwd: /home/ec2-user
     Properties:
       DisableApiTermination: false
@@ -142,24 +147,24 @@ Resources:
       KeyName: !Ref Keypair
       Monitoring: false
       NetworkInterfaces:
-      - DeleteOnTermination: true
-        Description: Primary network interface
-        DeviceIndex: 0
-        SubnetId: 
-          Fn::ImportValue:
-           !Join ["-", [!Ref OutputPrefix, "AzASubnet"]]
-        GroupSet: 
-        - 
-          Fn::ImportValue:
-           !Join ["-", [!Ref OutputPrefix, "CalligreSecurityGroup"]]
+        - DeleteOnTermination: true
+          Description: Primary network interface
+          DeviceIndex: 0
+          SubnetId:
+            Fn::ImportValue:
+              !Join ["-", [!Ref OutputPrefix, "AzASubnet"]]
+          GroupSet:
+            - Fn::ImportValue:
+                !Join ["-", [!Ref OutputPrefix, "CalligreSecurityGroup"]]
       Tags:
-      - Key: Name
-        Value: !Join ["-", [!Ref OutputPrefix, "calligre-instance"]]
+        - Key: Name
+          Value: !Join ["-", [!Ref OutputPrefix, "calligre-instance"]]
       UserData:
-        "Fn::Base64":
+        Fn::Base64:
           !Sub |
             #!/bin/bash -xe
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource Instance --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} \
+            --resource Instance --region ${AWS::Region}
   Ec2IamRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -233,12 +238,12 @@ Resources:
       Engine: postgres
       EngineVersion: 9.5.4
       LicenseModel: postgresql-license
-      DBSubnetGroupName: 
+      DBSubnetGroupName:
         Fn::ImportValue:
-         !Join ["-", [!Ref OutputPrefix, "DbSubnetGroup"]]
+          !Join ["-", [!Ref OutputPrefix, "DbSubnetGroup"]]
       VPCSecurityGroups:
-      - Fn::ImportValue:
-         !Join ["-", [!Ref OutputPrefix, CalligreDbSecurityGroup]]
+        - Fn::ImportValue:
+            !Join ["-", [!Ref OutputPrefix, CalligreDbSecurityGroup]]
       Tags:
-      - Key: Name
-        Value: !Join ["-", [!Ref OutputPrefix, calligre-rds-instance]]
+        - Key: Name
+          Value: !Join ["-", [!Ref OutputPrefix, calligre-rds-instance]]
