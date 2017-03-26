@@ -1,11 +1,21 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
 Description: Calligre DynamoDB CF Stack
+Outputs:
+  PostsTable:
+    Value:
+      Ref: PostsTable
+    Export:
+      Name: PostsTable
+  FlaggedPostsTable:
+    Value:
+      Ref: FlaggedPostsTable
+    Export:
+      Name: FlaggedPostsTable
 Resources:
   PostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: calligre-posts
       AttributeDefinitions:
       - AttributeName: posts
         AttributeType: S
@@ -22,7 +32,6 @@ Resources:
   FlaggedPostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: flagged
       AttributeDefinitions:
       - AttributeName: timestamp
         AttributeType: N
@@ -131,4 +140,5 @@ Resources:
             Ref: AlertSnsTopic
           Condition:
             StringEquals:
-              AWS:SourceOwner: 037954390517
+              AWS:SourceOwner:
+                Ref: AWS::AccountId

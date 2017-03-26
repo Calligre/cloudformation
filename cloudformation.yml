@@ -57,28 +57,41 @@ Resources:
                   become: true
                   roles:
                     - role: calligre-ansible-role
+              encoding: plain
+              group: ec2-user
               mode: "000644"
               owner: ec2-user
-              group: ec2-user
-              encoding: plain
             /home/ec2-user/calligre-ansible-role/vars/main.yml:
-              content: !Sub |
-                db_host: ${RdsInstance.Endpoint.Address}
-                db_port: ${RdsInstance.Endpoint.Port}
-                db_base: ${RdsDbName}
-                db_user: ${RdsUser}
-                db_password: ${RdsPassword}
-                db_admin_user: ${RdsAdminUser}
-                db_admin_password: ${RdsAdminPassword}
-                auth0_client_id: ${Auth0ClientId}
-                auth0_secret_id: ${Auth0SecretId}
-                sentry_dsn: ${SentryDsn}
-                calligre_domain: ${Domain}
-                aws_region: ${AWS::Region}
+              content: !Sub 
+                - |
+                  auth0_client_id: ${Auth0ClientId}
+                  auth0_secret_id: ${Auth0SecretId}
+                  aws_region: ${AWS::Region}
+                  calligre_domain: ${Domain}
+                  db_admin_password: ${RdsAdminPassword}
+                  db_admin_user: ${RdsAdminUser}
+                  db_base: ${RdsDbName}
+                  db_host: ${RdsInstance.Endpoint.Address}
+                  db_password: ${RdsPassword}
+                  db_port: ${RdsInstance.Endpoint.Port}
+                  db_user: ${RdsUser}
+                  external_post_sns_topic: ${ExternalPostSnsTopic}
+                  flagged_posts_table: ${FlaggedPostsTable}
+                  posts_table: ${PostsTable}
+                  profile_pic_bucket: ${ProfilePicsBucket}
+                  resize_bucket: ${ImagePendingResizeBucket}
+                  sentry_dsn: ${SentryDsn}
+                  upload_bucket: ${ImageBucket}
+                - ExternalPostSnsTopic: !ImportValue ExternalPostSnsTopic
+                  FlaggedPostsTable: !ImportValue FlaggedPostsTable
+                  ImageBucket: !ImportValue ImageBucket
+                  ImagePendingResizeBucket: !ImportValue ImagePendingResizeBucket
+                  ProfilePicsBucket: !ImportValue ProfilePicsBucket
+                  PostsTable: !ImportValue PostsTable 
+              encoding: plain 
+              group: ec2-user
               mode: "000644"
               owner: ec2-user
-              group: ec2-user
-              encoding: plain
           commands:
             1-install-ansible:
               command: pip -q install ansible

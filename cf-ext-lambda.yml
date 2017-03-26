@@ -1,0 +1,121 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Calligre Cross Posting Lambda CF Stack
+Parameters:
+  TwitterClientId:
+    Description: Twitter client ID to use for cross posting
+    Type: String
+  TwitterClientSecret: 
+    Description: Twitter client secret to use for cross posting
+    Type: String
+  Auth0ExtClientId:
+    Description: Auth0 client ID to use for crendential retrival
+    Type: String
+  Auth0ExtClientSecret:
+    Description: Auth0 client secret to use for crendential retrival
+    Type: String
+Outputs:
+  ExternalPostSnsTopic:
+    Value:
+      Ref: ExternalPostSnsTopic
+    Export:
+      Name: ExternalPostSnsTopic
+Resources:
+  ExtPostsLambda:
+    Type: "AWS::Lambda::Function"
+    DependsOn:
+      - LambdaS3GetIamPolicy
+    Properties:
+      Code:
+        S3Bucket: !Join ["", ["calligre-", !Ref "AWS::Region"]]
+        S3Key: lambda/ext-services.zip
+      Description: Lambda to cross post social media posts from Calligre
+      Environment:
+        Variables:
+          TWITTER_CLIENT_ID: 
+            Ref: TwitterClientId
+          TWITTER_CLIENT_SECRET: 
+            Ref: TwitterClientSecret
+          AUTH0_CLIENT_ID: 
+            Ref: Auth0ExtClientId
+          AUTH0_CLIENT_SECRET: 
+            Ref: Auth0ExtClientSecret
+      Handler: PostToExternalServices.handler
+      MemorySize: 128
+      Role: !GetAtt LambdaS3GetIamRole.Arn
+      Runtime: python2.7
+      Timeout: 30
+  LambdaS3GetIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  LambdaS3GetIamPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: LambdaS3Role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          # Get from any S3 bucket
+          - Effect: "Allow"
+            Action: 
+            - "s3:GetObject"
+            - "s3:GetObjectAcl"
+            Resource: "arn:aws:s3:::*"
+          - Effect: "Allow"
+            Action: 
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            Resource: "*"
+      Roles:
+        - Ref: LambdaS3GetIamRole
+  LambdaS3GetInvokePermission: 
+    Type: "AWS::Lambda::Permission"
+    Properties: 
+      FunctionName: !GetAtt ExtPostsLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref ExternalPostSnsTopic
+  ExternalPostSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: calligre-external-posts
+      Subscription:
+      - Endpoint: !GetAtt ExtPostsLambda.Arn
+        Protocol: lambda
+  ExternalPostSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+      - Ref: ExternalPostSnsTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: "*"
+          Action:
+          - SNS:GetTopicAttributes
+          - SNS:SetTopicAttributes
+          - SNS:AddPermission
+          - SNS:RemovePermission
+          - SNS:DeleteTopic
+          - SNS:Subscribe
+          - SNS:ListSubscriptionsByTopic
+          - SNS:Publish
+          - SNS:Receive
+          Resource:
+            Ref: ExternalPostSnsTopic
+          Condition:
+            StringEquals:
+              AWS:SourceOwner: 
+                Ref: "AWS::AccountId"
