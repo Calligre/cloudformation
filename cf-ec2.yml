@@ -8,6 +8,13 @@ Parameters:
   Auth0SecretId:
     Description: "Auth0 Secret Id"
     Type: String
+  CalligreLogo:
+    Description: "URL for the conference logo"
+    Type: String
+  CalligreName:
+    Default: Calligre
+    Description: "Name of the conference"
+    Type: String
   Domain:
     Description: "Domain that the server should respond to"
     Type: String
@@ -19,9 +26,9 @@ Parameters:
     Default: calligre
     Description: "EC2 Keypair to associate with the Instance"
     Type: String
-  Route53HostedZoneId:
-    Default: Z1D0AWFN0I54UQ
-    Description: The Route 53 Domain you want to host the website on
+  OutputPrefix:
+    Default: Calligre
+    Description: "String to prepend each stack so the outputs are unique"
     Type: String
   RdsAdminPassword:
     Description: "The RDS admin account password"
@@ -38,19 +45,19 @@ Parameters:
   RdsPassword:
     Default: postgres
     Description:
-      An unpriviledged user account for normal operations (Default is postgres)
+      "An unprivileged user account for normal operations (Default is postgres)"
     NoEcho: true
     Type: String
   RdsUser:
     Default: calligre
-    Description: "An unpriviledged user account for normal operations"
+    Description: "An unprivileged user account for normal operations"
+    Type: String
+  Route53HostedZoneId:
+    Default: Z1D0AWFN0I54UQ
+    Description: "The Route 53 Domain you want to host the website on"
     Type: String
   SentryDsn:
     Description: "Sentry DSN (optional, captures errors if you want)"
-    Type: String
-  OutputPrefix:
-    Description: String to prepend each stack so the outputs are unique
-    Default: Calligre
     Type: String
 Mappings:
   RegionMap:  # https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs
@@ -93,6 +100,8 @@ Resources:
                   auth0_secret_id: ${Auth0SecretId}
                   aws_region: ${AWS::Region}
                   calligre_domain: ${Domain}
+                  calligre_logo: ${CalligreLogo}
+                  calligre_name: ${CalligreName}
                   db_admin_password: ${RdsAdminPassword}
                   db_admin_user: ${RdsAdminUser}
                   db_base: ${RdsDbName}
