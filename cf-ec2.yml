@@ -231,7 +231,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     DeletionPolicy: Delete
     Properties:
-      AllocatedStorage: 1
+      AllocatedStorage: 5
       AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
       DBInstanceClass: db.t2.micro
